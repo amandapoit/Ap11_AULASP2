@@ -1,4 +1,91 @@
 
+-- SELECT * FROM tb_cliente
+
+-- SELECT * FROM tb_item
+
+-- SELECT * FROM tb_item_pedido
+
+-- SELECT * FROM tb_pedido
+
+-- SELECT * FROM tb_tipo_item
+
+-- DO $$
+-- DECLARE
+--     v_troco INT;
+--     v_valor_total INT;
+--     v_valor_a_pagar INT := 100;
+--     v_cod_pedido INT := 1;
+-- BEGIN
+--     CALL sp_calcular_valor_de_um_pedido(
+--         v_cod_pedido, 
+--         v_valor_total
+--     );
+--     CALL sp_calcular_troco(
+--         v_troco,
+--         v_valor_a_pagar,
+--         v_valor_total
+--     );
+--     RAISE NOTICE
+--         'A conta foi de R$% e você pagou R$%. Troco: R$%',
+--         v_valor_total, v_valor_a_pagar, v_troco;
+-- END;
+-- $$
+
+-- CREATE OR REPLACE PROCEDURE sp_calcular_troco(
+--     OUT p_troco INT,
+--     IN p_valor_a_pagar INT,
+--     IN p_valor_total INT
+-- ) LANGUAGE plpgsql
+-- AS $$
+-- BEGIN
+--     p_troco := p_valor_a_pagar - p_valor_total;
+-- END;
+-- $$
+
+-- DO $$
+-- DECLARE
+--     v_cod_pedido INT := 1;
+-- BEGIN
+--     CALL sp_fechar_pedido(200, v_cod_pedido);
+-- END;
+-- $$
+
+-- CREATE OR REPLACE PROCEDURE sp_fechar_pedido(
+--     IN p_valor_a_pagar INT,
+--     IN p_cod_pedido INT
+-- )   LANGUAGE plpgsql
+-- AS $$
+-- DECLARE
+--     v_valor_total INT;
+-- BEGIN
+--     CALL sp_calcular_valor_de_um_pedido(
+--         p_cod_pedido,
+--         v_valor_total
+--     );
+--     IF p_valor_a_pagar < v_valor_total THEN
+--         RAISE NOTICE 'R$% insuficiente para pagar a conta de R$%',
+--         p_valor_a_pagar,
+--         v_valor_total;
+--     ELSE
+--         UPDATE tb_pedido p SET
+--         data_modificacao = CURRENT_TIMESTAMP,
+--         status = 'fechado'
+--         WHERE p.cod_pedido = p_cod_pedido;
+
+--     END IF;
+-- END;
+-- $$
+
+-- DO $$
+-- DECLARE
+--     v_valor_total INT;
+--     v_cod_pedido INT := 1;
+-- BEGIN 
+--     CALL sp_calcular_valor_de_um_pedido(1, v_valor_total);
+--     RAISE NOTICE 'Total do pedido %: R$%', v_cod_pedido, v_valor_total;
+-- END;
+-- $$
+
 -- CREATE OR REPLACE PROCEDURE sp_calcular_valor_de_um_pedido(
 --     IN p_cod_pedido INT, OUT p_valor_total INT
 -- )
@@ -17,8 +104,6 @@
 -- $$
 
 -- CALL sp_adicionar_item_a_pedido(1, 1);
--- SELECT * FROM tb_item_pedido;
--- SELECT * FROM tb_pedido;
 
 -- CREATE OR REPLACE PROCEDURE sp_adicionar_item_a_pedido(
 --     IN p_cod_item INT, IN p_cod_pedido INT
@@ -34,33 +119,19 @@
 -- END;
 -- $$
 
-
--- SELECT * FROM tb_pedido
-
--- class Pessoa:
--- __init__(self, idade):
---  self.idade = idade
-
--- jennyfer = Pessoa(19)
-
--- def fazerAniversario(p):
--- p.idade += 1;
-
-
 -- DO $$
 -- DECLARE
 --     v_cod_pedido INT;
 --     v_cod_cliente INT;
 -- BEGIN
 --     SELECT cod_cliente FROM tb_cliente 
---         WHERE nome LIKE 'Jonas Samuel' INTO v_cod_cliente;
+--         WHERE nome LIKE 'Ana Silva' INTO v_cod_cliente;
 --     CALL sp_criar_pedido (v_cod_pedido, v_cod_cliente);
 --     RAISE NOTICE 'Código do pedido recém criado: %',
 --     v_cod_pedido;
 -- END;
 -- $$
 
--- SELECT * FROM tb_cliente;
 
 -- CREATE OR REPLACE PROCEDURE sp_criar_pedido(
 --     OUT p_cod_pedido INT, IN p_cod_cliente INT
@@ -73,7 +144,7 @@
 -- END;
 -- $$
 
--- -- CADASTRANDO CLIENTE - CÓDIGO É SERIAL AUTOINCREMENT
+-- CADASTRANDO CLIENTE - CÓDIGO É SERIAL AUTOINCREMENT
 -- CALL sp_cadastrar_cliente ('Ana Silva')
 
 -- CALL sp_cadastrar_cliente ('Jonas Samuel')
@@ -121,6 +192,7 @@
 --     REFERENCES tb_tipo_item(cod_tipo)
 -- ); 
 
+
 -- INSERT INTO tb_tipo_item
 -- (descricao) VALUES
 -- ('Bebida'), ('Comida');
@@ -145,6 +217,8 @@
 --     cod_cliente SERIAL PRIMARY KEY,
 --     nome VARCHAR(200) NOT NULL
 -- );
+
+
 
 
 -- -- EXEMPLO 6
