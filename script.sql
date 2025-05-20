@@ -1,3 +1,14 @@
+# EXERCÍCIOS - AP11
+
+# 1.1 Adicione uma tabela de log ao sistema do restaurante. Ajuste cada procedimento para que ele registre
+#   - a data em que a operação aconteceu
+#   - o nome do procedimento executado
+
+-- CREATE TABLE tb_log_de_operacoes(
+--     cod_operacao SERIAL PRIMARY KEY,
+--     data_operacao TIMESTAMP,
+--     nome_operacao VARCHAR(200)
+-- );
 
 -- SELECT * FROM tb_cliente
 
@@ -9,12 +20,38 @@
 
 -- SELECT * FROM tb_tipo_item
 
+-- SELECT * FROM tb_log_de_operacoes
+
+-- -- CÁLCULO DO TROCO DO PEDIDO 1
 -- DO $$
 -- DECLARE
 --     v_troco INT;
 --     v_valor_total INT;
 --     v_valor_a_pagar INT := 100;
 --     v_cod_pedido INT := 1;
+-- BEGIN
+--     CALL sp_calcular_valor_de_um_pedido(
+--         v_cod_pedido, 
+--         v_valor_total
+--     );
+--     CALL sp_calcular_troco(
+--         v_troco,
+--         v_valor_a_pagar,
+--         v_valor_total
+--     );
+--     RAISE NOTICE
+--         'A conta foi de R$% e você pagou R$%. Troco: R$%',
+--         v_valor_total, v_valor_a_pagar, v_troco;
+-- END;
+-- $$
+
+-- -- CÁLCULO DO TROCO DO PEDIDO 2
+-- DO $$
+-- DECLARE
+--     v_troco INT;
+--     v_valor_total INT;
+--     v_valor_a_pagar INT := 10;
+--     v_cod_pedido INT := 2;
 -- BEGIN
 --     CALL sp_calcular_valor_de_um_pedido(
 --         v_cod_pedido, 
@@ -38,15 +75,28 @@
 -- ) LANGUAGE plpgsql
 -- AS $$
 -- BEGIN
+--     INSERT INTO tb_log_de_operacoes (data_operacao, nome_operacao)
+--     VALUES (CURRENT_TIMESTAMP, 'Cálculo de Troco');
 --     p_troco := p_valor_a_pagar - p_valor_total;
 -- END;
 -- $$
 
+
+-- -- FECHA PEDIDO 1
 -- DO $$
 -- DECLARE
 --     v_cod_pedido INT := 1;
 -- BEGIN
 --     CALL sp_fechar_pedido(200, v_cod_pedido);
+-- END;
+-- $$
+
+-- -- FECHA PEDIDO 2
+-- DO $$
+-- DECLARE
+--     v_cod_pedido INT := 2;
+-- BEGIN
+--     CALL sp_fechar_pedido(10, v_cod_pedido);
 -- END;
 -- $$
 
@@ -58,6 +108,8 @@
 -- DECLARE
 --     v_valor_total INT;
 -- BEGIN
+--     INSERT INTO tb_log_de_operacoes (data_operacao, nome_operacao)
+--     VALUES (CURRENT_TIMESTAMP, 'Fechamento de Pedido');
 --     CALL sp_calcular_valor_de_um_pedido(
 --         p_cod_pedido,
 --         v_valor_total
@@ -76,6 +128,7 @@
 -- END;
 -- $$
 
+-- -- CÁLCULO DO PEDIDO 1
 -- DO $$
 -- DECLARE
 --     v_valor_total INT;
@@ -86,12 +139,26 @@
 -- END;
 -- $$
 
+
+-- -- CÁLCULO DO PEDIDO 2
+-- DO $$
+-- DECLARE
+--     v_valor_total INT;
+--     v_cod_pedido INT := 2;
+-- BEGIN 
+--     CALL sp_calcular_valor_de_um_pedido(2, v_valor_total);
+--     RAISE NOTICE 'Total do pedido %: R$%', v_cod_pedido, v_valor_total;
+-- END;
+-- $$
+
 -- CREATE OR REPLACE PROCEDURE sp_calcular_valor_de_um_pedido(
 --     IN p_cod_pedido INT, OUT p_valor_total INT
 -- )
 -- LANGUAGE plpgsql
 -- AS $$
 -- BEGIN
+--     INSERT INTO tb_log_de_operacoes (data_operacao, nome_operacao)
+--     VALUES (CURRENT_TIMESTAMP, 'Cálculo do valor total do pedido');
 --     SELECT SUM(i.valor) FROM
 --         tb_pedido p
 --         INNER JOIN tb_item_pedido ip
@@ -105,12 +172,16 @@
 
 -- CALL sp_adicionar_item_a_pedido(1, 1);
 
+-- CALL sp_adicionar_item_a_pedido(2, 2);
+
 -- CREATE OR REPLACE PROCEDURE sp_adicionar_item_a_pedido(
 --     IN p_cod_item INT, IN p_cod_pedido INT
 -- )
 -- LANGUAGE plpgsql
 -- AS $$
 -- BEGIN
+--     INSERT INTO tb_log_de_operacoes (data_operacao, nome_operacao)
+--     VALUES (CURRENT_TIMESTAMP, 'Adição de Item a Pedido');
 --     INSERT INTO tb_item_pedido (cod_item, cod_pedido)
 --     VALUES($1, $2);
 --     UPDATE tb_pedido p SET
@@ -119,13 +190,14 @@
 -- END;
 -- $$
 
+-- -- CRIA NOVO PEDIDO JÁ COM O CLIENTE
 -- DO $$
 -- DECLARE
 --     v_cod_pedido INT;
 --     v_cod_cliente INT;
 -- BEGIN
 --     SELECT cod_cliente FROM tb_cliente 
---         WHERE nome LIKE 'Ana Silva' INTO v_cod_cliente;
+--         WHERE nome LIKE 'Jonas Samuel' INTO v_cod_cliente;
 --     CALL sp_criar_pedido (v_cod_pedido, v_cod_cliente);
 --     RAISE NOTICE 'Código do pedido recém criado: %',
 --     v_cod_pedido;
@@ -138,22 +210,36 @@
 -- )
 -- LANGUAGE plpgsql
 -- AS $$
--- BEGIN 
+-- BEGIN
+--     INSERT INTO tb_log_de_operacoes (data_operacao, nome_operacao)
+--     VALUES (CURRENT_TIMESTAMP, 'Criação de Pedido');
 --     INSERT INTO tb_pedido(cod_cliente) VALUES (p_cod_cliente);
 --     SELECT LASTVAL() INTO p_cod_pedido;
 -- END;
 -- $$
 
--- CADASTRANDO CLIENTE - CÓDIGO É SERIAL AUTOINCREMENT
--- CALL sp_cadastrar_cliente ('Ana Silva')
+-- CREATE OR REPLACE PROCEDURE sp_criar_pedido_sem_itens(OUT p_cod_pedido integer, IN p_cod_cliente integer DEFAULT NULL::integer)
+-- LANGUAGE plpgsql
+-- AS $$
+-- BEGIN
+--     INSERT INTO tb_log_de_operacoes (data_operacao, nome_operacao)
+--     VALUES (CURRENT_TIMESTAMP, 'Criação de pedido vazio');
+--     Insert INTO tb_pedido (cod_cliente) VALUES (p_cod_pedido);
+--     SELECT LASTVAL () INTO p_cod_pedido;
+-- END;
+-- $$
 
--- CALL sp_cadastrar_cliente ('Jonas Samuel')
+CALL sp_cadastrar_cliente ('Ana Silva')
+
+CALL sp_cadastrar_cliente ('Jonas Samuel')
 
 -- CREATE OR REPLACE PROCEDURE sp_cadastrar_cliente
 -- (IN p_nome VARCHAR(200), IN p_cod_cliente INT DEFAULT NULL)
 -- LANGUAGE plpgsql
 -- AS $$
 -- BEGIN
+--     INSERT INTO tb_log_de_operacoes (data_operacao, nome_operacao)
+--            VALUES (CURRENT_TIMESTAMP, 'Cadastro de Cliente');
 --     IF p_cod_cliente IS NULL THEN
 --         INSERT INTO tb_cliente (nome) VALUES (p_nome);
 --     ELSE
@@ -163,6 +249,7 @@
 --     END IF;
 -- END;
 -- $$
+
 
 -- CREATE TABLE tb_item_pedido(
 --     --surrogate key
